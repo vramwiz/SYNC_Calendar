@@ -16,7 +16,6 @@ type
   PVertex = ^TVertexColorNorm;
   PItemPointer = ^Pointer;
   PSelectOption = ^TFILTER_ITEM_SELECT_ITEM;
-  PVisibilityRule = ^TFILTER_ITEM_HIDE_RULE;
 
 var
   Table: PFILTER_PLUGIN_TABLE;
@@ -162,7 +161,7 @@ procedure ResetParams;
 begin
   ItemKind^.Value := Ord(ckMonth);
   ItemEffect^.Value := Ord(ceNone);
-  ItemGlyph^.Value := Ord(gsClassic);
+  ItemGlyph^.Value := Ord(gsMincho);
   Base^.Value := DefaultBaseDate;
   Target^.Value := DefaultTargetDate;
   Holidays^.Value := DefaultHolidays;
@@ -227,26 +226,31 @@ end;
 
 procedure VerifyGlyphStyles;
 const
-  Options: array[0..3] of string = ('明朝', '丸ゴシック', '角ゴシック', '手書き体');
-  Values: array[0..3] of TCalendarGlyphStyle = (gsMincho, gsRoundGothic, gsSquareGothic, gsClassic);
+  Options: array[TCalendarGlyphStyle] of string = ('明朝', '丸ゴシック', '角ゴシック', '手書き体');
 var
   S, Previous: TCalendarGlyphStyle;
   I: Integer;
   Glyphs, Turning: array[TCalendarGlyphStyle] of string;
   Monthly: string;
-  Rule: PVisibilityRule;
+  Entry: PItemPointer;
   Option: PSelectOption;
 begin
-  Check(ItemGlyph^.Value = Ord(gsClassic), 'The current glyphs are the default');
+  Check(ItemGlyph^.Value = Ord(gsMincho), 'Mincho is the default');
   Option := PSelectOption(ItemGlyph^.List);
-  for I := Low(Options) to High(Options) do
-    Check((string(Option[I].Name) = Options[I]) and (Option[I].Value = Ord(Values[I])),
-      'Glyph selector order, names and existing IDs');
+  for S := Low(TCalendarGlyphStyle) to High(TCalendarGlyphStyle) do
+  begin
+    I := Ord(High(TCalendarGlyphStyle)) - Ord(S);
+    Check((string(Option[I].Name) = Options[S]) and (Option[I].Value = Ord(S)),
+      'Glyph selector registration and ascending display IDs');
+  end;
   Check(Option[Length(Options)].Name = nil, 'Glyph selector terminator');
-  Rule := Item('日めくりの字形', 'hiderule');
-  Check((string(Rule^.ConditionName) = 'カレンダー種類') and
-    (Rule^.ConditionOperator = FILTER_HIDE_NOT_EQUAL) and (Rule^.ConditionValue = Ord(ckDay)),
-    'Glyph selector is shown only for daily calendars');
+  Entry := PItemPointer(Table^.Items);
+  while Entry^ <> nil do
+  begin
+    Check(string(PFILTER_ITEM_STRING(Entry^)^.ItemType) <> 'hiderule',
+      'Calendar parameters are registered without a hide rule');
+    Inc(Entry);
+  end;
 
   ResetParams;
   Monthly := Render(0);
@@ -279,7 +283,7 @@ begin
   end;
   ItemEffect^.Value := Ord(ceNone);
   ItemGlyph^.Value := 99;
-  Check(Render(0) = Glyphs[gsClassic], 'Unknown glyph style falls back to the current glyphs');
+  Check(Render(0) = Glyphs[gsMincho], 'Unknown glyph style falls back to Mincho');
 end;
 
 procedure VerifyDates;

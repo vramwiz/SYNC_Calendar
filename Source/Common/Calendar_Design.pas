@@ -14,10 +14,13 @@ type
     Left, Top, Right, Bottom: Single;
   end;
 
+// 種類ごとのアンカー寸法と、中心原点のローカル座標で紙面の境界を返す。
 function CalendarLayout(Kind: TCalendarKind): TCalendarLayout;
 // 本体と留め具を別の面に追加する。紙面は AddPage から生成する。
 procedure AddBackboard(Art: TArt; const L: TCalendarLayout; Paper: Cardinal);
+// 留め具の三角形を追加する。台紙と紙の前後関係は Lift で表す。
 procedure AddBinding(Art: TArt; const L: TCalendarLayout; Kind: TCalendarKind);
+// 指定日付の一面を追加する。裏面は無地、簡略面は高速めくりに使う。
 procedure AddPage(Art: TArt; const L: TCalendarLayout; const S: TCalendarSettings;
   Index: Integer; Back, Simple: Boolean);
 

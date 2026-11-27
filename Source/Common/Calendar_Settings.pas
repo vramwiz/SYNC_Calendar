@@ -17,7 +17,7 @@ const
 type
   TCalendarKind = (ckMonth, ckIllustrated, ckDay);
   TCalendarEffect = (ceNone, ceTurn, ceFlutter, ceReverse, ceReverseFlutter);
-  TCalendarGlyphStyle = (gsClassic, gsSquareGothic, gsRoundGothic, gsMincho);
+  TCalendarGlyphStyle = (gsMincho, gsRoundGothic, gsSquareGothic, gsClassic);
   TCalendarColor = (ccText, ccSaturday, ccHoliday, ccPaper);
   THolidays = array[1..12] of set of 1..31;
   TCalendarSettings = record
@@ -30,6 +30,7 @@ type
     Colors: array[TCalendarColor] of Cardinal; // $RRGGBB
   end;
 
+  // 映像・音声で共用する区間情報。進行方向と紙を動かす向きを独立して持つ。
   TCalendarSchedule = record
     First, Last, Turns: Integer;
     StartTime, Duration: Double;
@@ -44,11 +45,17 @@ type
 
 // 日付文字列を厳密に読み取り、基準の入力不正時は初期値、目標の入力不正時は基準を使う。
 procedure ReadPages(var S: TCalendarSettings; BaseDate, TargetDate: PWideChar);
+// 日めくりの日通算番号、または月めくりの月通算番号を暦日に戻す。
 function PageDate(Kind: TCalendarKind; Index: Integer): TDateTime;
+// 月日リストを年に依存しない集合へ変換する。空欄と不正な要素は読み飛ばす。
 function ParseHolidays(Text: PWideChar): THolidays;
+// 登録祝日と日曜・振替休日を土曜日より優先し、該当する文字色を返す。
 function DayColor(const S: TCalendarSettings; Date: TDateTime): Cardinal;
+// 日曜始まりの曜日番号（1～7）から、見出しに使う文字色を返す。
 function WeekdayColor(const S: TCalendarSettings; Weekday: Integer): Cardinal;
+// ホストから渡る数値を範囲に収める。NaN・無限大には初期値を使う。
 function FiniteRange(Value, Fallback, Low, High: Double): Double;
+// 設定から描画と音声で共用する有限のめくり回数と端点を作る。
 function MakeSchedule(const S: TCalendarSettings): TCalendarSchedule;
 // 相対時刻の秒数からフレームを決める。前の呼び出しの状態は使わない。
 function CalendarFrame(const Schedule: TCalendarSchedule; Time: Double): TCalendarFrame;

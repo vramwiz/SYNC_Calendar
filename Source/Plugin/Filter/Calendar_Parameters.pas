@@ -30,11 +30,12 @@ const
     (Name:'逆再生'; Value:Ord(ceReverse)),
     (Name:'ペラペラ逆再生'; Value:Ord(ceReverseFlutter)),
     (Name:nil; Value:0));
+  // 選択値を画面上の順に割り当て、登録配列はポップアップの展開順に合わせる。
   GlyphOptions: array[0..4] of TFILTER_ITEM_SELECT_ITEM = (
-    (Name:'明朝'; Value:Ord(gsMincho)),
-    (Name:'丸ゴシック'; Value:Ord(gsRoundGothic)),
-    (Name:'角ゴシック'; Value:Ord(gsSquareGothic)),
     (Name:'手書き体'; Value:Ord(gsClassic)),
+    (Name:'角ゴシック'; Value:Ord(gsSquareGothic)),
+    (Name:'丸ゴシック'; Value:Ord(gsRoundGothic)),
+    (Name:'明朝'; Value:Ord(gsMincho)),
     (Name:nil; Value:0));
   ColorNames: array[TCalendarColor] of PWideChar =
     ('通常文字色', '土曜日文字色', '日曜日・祝日文字色', '用紙色');
@@ -42,8 +43,8 @@ const
     ($000000, $0000FF, $FF0000, $FFFFFF);
 
 var
+  // 項目の実体は DLL が所有する。ホストから入力される文字列は描画中に読み取る。
   KindItem, EffectItem, GlyphItem: TFILTER_ITEM_SELECT;
-  GlyphVisibility: TFILTER_ITEM_HIDE_RULE;
   BaseItem, TargetItem: TFILTER_ITEM_STRING;
   HolidaysItem: TFILTER_ITEM_TEXT;
   TimeGroup, TimeEnd, ColorGroup, ColorEnd: TFILTER_ITEM_GROUP;
@@ -56,8 +57,7 @@ var
   RGB: Cardinal;
 begin
   AddSelect(KindItem, 'カレンダー種類', Ord(ckMonth), @KindOptions[0]);
-  AddSelect(GlyphItem, '日めくりの字形', Ord(gsClassic), @GlyphOptions[0]);
-  AddHideRule(GlyphVisibility, GlyphItem.Name, KindItem.Name, FILTER_HIDE_NOT_EQUAL, Ord(ckDay));
+  AddSelect(GlyphItem, '日めくりの字形', Ord(gsMincho), @GlyphOptions[0]);
   AddString(BaseItem, '基準年月日', DefaultBaseDate);
   AddString(TargetItem, '目標年月日', DefaultTargetDate);
   AddSelect(EffectItem, '演出', Ord(ceNone), @EffectOptions[0]);

@@ -1,12 +1,12 @@
 [
     {
-        "id":  "VRAMWIZ.SYNC_WeatherFX",
-        "name":  "天気演出",
+        "id":  "VRAMWIZ.SYNC_Calendar",
+        "name":  "カレンダー演出",
         "type":  "フィルタプラグイン",
-        "summary":  "空・雲・雨・雪などを組み合わせ、時刻や風で変わる天気を描画",
-        "description":  "https://raw.githubusercontent.com/vramwiz/SYNC_WeatherFX/refs/heads/main/README.md",
+        "summary":  "月めくり・日めくりのカレンダーで時間の流れを演出",
+        "description":  "https://raw.githubusercontent.com/vramwiz/SYNC_Calendar/refs/heads/main/README.md",
         "author":  "VRAMの魔術師",
-        "repoURL":  "https://github.com/vramwiz/SYNC_WeatherFX/",
+        "repoURL":  "https://github.com/vramwiz/SYNC_Calendar/",
         "licenses":  [
                          {
                              "type":  "GPL-3.0",
@@ -21,9 +21,8 @@
                          }
                      ],
         "tags":  [
-          "天気",
-          "空"
-        ],
+                     "アニメーション"
+                 ],
         "dependencies":  [
 
                          ],
@@ -35,8 +34,8 @@
                                          "direct":  null,
                                          "github":  {
                                                         "owner":  "vramwiz",
-                                                        "repo":  "SYNC_WeatherFX",
-                                                        "pattern":  "^SYNC_WeatherFX\\.zip$"
+                                                        "repo":  "SYNC_Calendar",
+                                                        "pattern":  "^SYNC_Calendar\\.zip$"
                                                     }
                                      },
                           "install":  [
@@ -48,41 +47,25 @@
                                           },
                                           {
                                               "action":  "copy",
-                                              "from":  "{tmp}/SYNC_WeatherFX",
-                                              "to":  "{pluginsDir}/SYNC_WeatherFX"
+                                              "from":  "{tmp}/SYNC_Calendar",
+                                              "to":  "{pluginsDir}/SYNC_Calendar"
                                           }
                                       ],
                           "uninstall":  [
                                             {
                                                 "action":  "delete",
-                                                "path":  "{pluginsDir}/SYNC_WeatherFX/SYNC_WeatherFX.auf2"
-                                            },
-                                            {
-                                                "action":  "delete",
-                                                "path":  "{pluginsDir}/SYNC_WeatherFX/README.md"
-                                            },
-                                            {
-                                                "action":  "delete",
-                                                "path":  "{pluginsDir}/SYNC_WeatherFX/LICENSE"
-                                            },
-                                            {
-                                                "action":  "delete",
-                                                "path":  "{pluginsDir}/SYNC_WeatherFX/THIRD_PARTY_NOTICES.md"
-                                            },
-                                            {
-                                                "action":  "delete",
-                                                "path":  "{pluginsDir}/SYNC_WeatherFX/ThirdParty/LICENSE.AviUtl2-SDK.txt"
+                                                "path":  "{pluginsDir}/SYNC_Calendar"
                                             }
                                         ]
                       },
         "version":  [
                         {
                             "version":  "v1.0.0",
-                            "release_date":  "2026-11-18",
+                            "release_date":  "2026-11-27",
                             "file":  [
                                          {
-                                             "path":  "{pluginsDir}/SYNC_WeatherFX/SYNC_WeatherFX.auf2",
-                                             "XXH3_128":  "6f33ddf8313e55db886197cf7ae667d2"
+                                             "path":  "{pluginsDir}/SYNC_Calendar/SYNC_Calendar.auf2",
+                                             "XXH3_128":  "c5d0f11cd4df2bc79cc612f8e4fb124c"
                                          }
                                      ]
                         }

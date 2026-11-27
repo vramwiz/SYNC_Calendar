@@ -21,6 +21,7 @@ type
     Art: array[0..BandCount - 1] of TArt;
     constructor Create;
     destructor Destroy; override;
+    // 紙面の図形順を維持しながら帯ごとの三角形を作り直す。Source は呼び出し元が所有する。
     procedure Fill(Source: TArt; const Layout: TCalendarLayout);
   end;
 
@@ -43,6 +44,7 @@ type
     FSettings: TCalendarSettings;
     FReady: Boolean;
     FLayout: TCalendarLayout;
+    // 表面は下の紙と動く紙の2枚を保持する。日付や字形の変化に応じて再生成する。
     FPages: array[0..1] of TPageBands;
     FBack: TPageBands;
     FBoard, FBoardBack, FBinding, FShadow, FWork: TArt;
@@ -68,6 +70,7 @@ implementation
 uses System.Math, System.SysUtils;
 
 const
+  // 標準描画の座標変換に必要な画像入力。実際の紙面は DrawPoly が出力する。
   AnchorPixel: TPIXEL_RGBA = (R:255; G:255; B:255; A:255);
 
 function Smooth(X: Double): Double;

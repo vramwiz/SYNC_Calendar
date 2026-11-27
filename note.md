@@ -17,7 +17,7 @@ cmd /c 'call "C:\Program Files (x86)\Embarcadero\Studio\37.0\bin\rsvars.bat" && 
 .\Tests\run_tests.ps1
 ```
 
-- Win64 の Debug / Release は `C:\ProgramData\aviutl2\Plugin\SYNC_Calendar\` に出力する。出力先は両構成で共通なので、構成別に確認する場合はそれぞれのビルド直後に検査する。
+- Win64 の Debug / Release は `C:\ProgramData\aviutl2\Plugin\SYNC_Calendar` に出力する。出力先は両構成で共通なので、構成別に確認する場合はそれぞれのビルド直後に検査する。
 - ビルド後イベントはコピー元と同じ `copy ... && del ...`。DLL を AUF2 へコピーし、成功後に DLL を削除する。Release では RSM も削除する。DCU は `Win64\Debug\DCU` / `Win64\Release\DCU` に置く。
 - デバッガーホストは両構成とも `D:\aviutl2_v2.1.16\aviutl2.exe`。MSBuild の結果と IDE 内の表示・ビルド結果は区別する。
 - ユニット追加時は `.dpr` の `in` と `.dproj` の `DCCReference` を揃える。検索パスは `Source\Common`、`Source\Lib`、`Source\Lib\FilterTable`、`Source\Plugin\Filter`。IDE で開いたまま両ファイルを外部更新した場合はプロジェクトを開き直す。
@@ -41,8 +41,7 @@ cmd /c 'call "C:\Program Files (x86)\Embarcadero\Studio\37.0\bin\rsvars.bat" && 
 
 ## Setup
 
-`setup` は WeatherFX のフォルダーをそのままコピーした。梱包スクリプト、公開カタログ、既存 ZIP は WeatherFX 用。カレンダー演出の配布準備時に製品名、配置先、配布先とハッシュを合わせる。
-
+初回公開用の ZIP とカタログは `setup/make_release_zip.bat` で作成する。出力名は `SYNC_Calendar.zip` と `SYNC_Calendar.catalog.json`。カタログは `v1.0.0` から始め、ZIP に収める本番 AUF2 の XXH3-128 を使用する。具体的な引数と必要なツールは [setup/README.md](setup/README.md) に記載する。
 
 ## AviUtl2カタログ登録時の共通ルール
 
@@ -55,3 +54,10 @@ cmd /c 'call "C:\Program Files (x86)\Embarcadero\Studio\37.0\bin\rsvars.bat" && 
 - Delphi 37.0 の Win64 Debug / Release を MSBuild で再ビルドし、両方とも警告0・エラー0。本番 AUF2 を読み込む検査は両構成で成功し、採取した描画頂点28件の SHA-256 が一致した。
 - 配置済み Release は 1,759,232 バイト。SHA-256 は 0F508EED2E1377BCEB03B8362504C77BFFFAFA2D7995D078DDD6906A32292DA9。ログは Win64/BuildLogs に保存した。
 - setup の5ファイルは ZIP を含めてコピー元と SHA-256 が一致した。描画頂点から作成した確認画像は Win64/CalendarTests に保存した。AviUtl2 内のプレビュー・カメラ画質・音の聴感は実機未確認。
+
+
+## v1.0.0 配布前の確認（2026-11-27）
+
+- 本体ソースの最長ユニットは Calendar_Renderer.pas の481行。共通作業規則に沿い、公開処理の入出力と描画資源の所有権を補足した。
+- Win64 Debug / Release とも警告0・エラー0。本番 AUF2 の検査に合格し、採取した36件の描画頂点は両構成および直前の Release と一致した。
+- SYNC_Calendar.zip の6ファイルを原本と照合した。SYNC_Calendar.catalog.json の AUF2 の XXH3-128 は c5d0f11cd4df2bc79cc612f8e4fb124c。

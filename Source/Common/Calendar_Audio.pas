@@ -54,6 +54,7 @@ var
   Seed: Cardinal;
 begin
   P := F.Progress;
+  // 動画のシークやバッファ分割に関係なく、同じ紙と進行度には同じ擦過音を使う。
   Time := P * Min(0.80, Period);
   Seed := Cardinal(F.TurningPage + 1) xor $CBFA7129;
   Fade := Min(1.0, Min(P, 1 - P) * 22);

@@ -11,7 +11,9 @@ uses Calendar_Vector, Calendar_Settings;
 // 紙面の指定位置に、Left を起点として文字列を加える。戻り値は次の描画位置。
 function CalendarText(Art: TArt; const Value: string; Left, Top, Height: Single;
   Color: Cardinal; Style: TCalendarGlyphStyle = gsClassic): Single;
+// 描画の余白込みの幅を返す。字形切り替え後も紙面の配置を共用できる。
 function TextWidth(const Value: string; Height: Single): Single;
+// 指定した紙面座標を中心として文字の三角形を追加する。
 procedure CenterText(Art: TArt; const Value: string; X, Y, Height: Single;
   Color: Cardinal; Style: TCalendarGlyphStyle = gsClassic);
 

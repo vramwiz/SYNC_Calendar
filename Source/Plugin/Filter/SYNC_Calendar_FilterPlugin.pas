@@ -24,6 +24,7 @@ uses System.SyncObjs, System.SysUtils, Winapi.Windows, PluginFilterTable,
 type
   TCalendarSession = class
   public
+    // 同じオブジェクトを複数フレームから参照する場合に描画キャッシュを保護する。
     Lock: TCriticalSection;
     Renderer: TCalendarRenderer;
     constructor Create;
