@@ -193,12 +193,12 @@ begin
   Art.Rect(L.Left + 31, L.Top + 98, L.Right - 31, L.Top + 99.5, Rule);
   Art.Rect(L.Left + 31, L.Bottom - 101, L.Right - 31, L.Bottom - 99.5, Rule);
   Art.Lift := 0.20;
-  CenterText(Art, IntToStr(D), 0, (L.Top + L.Bottom) * 0.5 - 2, 277, Color);
+  CenterText(Art, IntToStr(D), 0, (L.Top + L.Bottom) * 0.5 - 2, 277, Color, S.DayGlyph);
   if Simple then Exit;
   CenterText(Art, IntToStr(Y) + '年  ' + IntToStr(M) + '月', 0, L.Top + 61, 38,
-    S.Colors[ccText]);
+    Color, S.DayGlyph);
   Text := Weekdays[DayOfWeek(Date)] + '曜日';
-  CalendarText(Art, Text, L.Right - 34 - TextWidth(Text, 41), L.Bottom - 76, 41, Color);
+  CalendarText(Art, Text, L.Right - 34 - TextWidth(Text, 41), L.Bottom - 76, 41, Color, S.DayGlyph);
 end;
 
 procedure AddPage(Art: TArt; const L: TCalendarLayout; const S: TCalendarSettings;

@@ -17,11 +17,13 @@ const
 type
   TCalendarKind = (ckMonth, ckIllustrated, ckDay);
   TCalendarEffect = (ceNone, ceTurn, ceFlutter, ceReverse, ceReverseFlutter);
+  TCalendarGlyphStyle = (gsClassic, gsSquareGothic, gsRoundGothic, gsMincho);
   TCalendarColor = (ccText, ccSaturday, ccHoliday, ccPaper);
   THolidays = array[1..12] of set of 1..31;
   TCalendarSettings = record
     Kind: TCalendarKind;
     Effect: TCalendarEffect;
+    DayGlyph: TCalendarGlyphStyle;
     BasePage, TargetPage: Integer;
     StartTime, Duration, Volume: Double;
     Holidays: THolidays;

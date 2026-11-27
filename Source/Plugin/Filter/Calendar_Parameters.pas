@@ -30,13 +30,20 @@ const
     (Name:'逆再生'; Value:Ord(ceReverse)),
     (Name:'ペラペラ逆再生'; Value:Ord(ceReverseFlutter)),
     (Name:nil; Value:0));
+  GlyphOptions: array[0..4] of TFILTER_ITEM_SELECT_ITEM = (
+    (Name:'明朝'; Value:Ord(gsMincho)),
+    (Name:'丸ゴシック'; Value:Ord(gsRoundGothic)),
+    (Name:'角ゴシック'; Value:Ord(gsSquareGothic)),
+    (Name:'手書き体'; Value:Ord(gsClassic)),
+    (Name:nil; Value:0));
   ColorNames: array[TCalendarColor] of PWideChar =
     ('通常文字色', '土曜日文字色', '日曜日・祝日文字色', '用紙色');
   DefaultColors: array[TCalendarColor] of Cardinal =
     ($000000, $0000FF, $FF0000, $FFFFFF);
 
 var
-  KindItem, EffectItem: TFILTER_ITEM_SELECT;
+  KindItem, EffectItem, GlyphItem: TFILTER_ITEM_SELECT;
+  GlyphVisibility: TFILTER_ITEM_HIDE_RULE;
   BaseItem, TargetItem: TFILTER_ITEM_STRING;
   HolidaysItem: TFILTER_ITEM_TEXT;
   TimeGroup, TimeEnd, ColorGroup, ColorEnd: TFILTER_ITEM_GROUP;
@@ -49,6 +56,8 @@ var
   RGB: Cardinal;
 begin
   AddSelect(KindItem, 'カレンダー種類', Ord(ckMonth), @KindOptions[0]);
+  AddSelect(GlyphItem, '日めくりの字形', Ord(gsClassic), @GlyphOptions[0]);
+  AddHideRule(GlyphVisibility, GlyphItem.Name, KindItem.Name, FILTER_HIDE_NOT_EQUAL, Ord(ckDay));
   AddString(BaseItem, '基準年月日', DefaultBaseDate);
   AddString(TargetItem, '目標年月日', DefaultTargetDate);
   AddSelect(EffectItem, '演出', Ord(ceNone), @EffectOptions[0]);
@@ -80,6 +89,10 @@ begin
   if (EffectItem.Value >= Ord(Low(TCalendarEffect))) and
     (EffectItem.Value <= Ord(High(TCalendarEffect))) then
     Result.Effect := TCalendarEffect(EffectItem.Value);
+
+  if (GlyphItem.Value >= Ord(Low(TCalendarGlyphStyle))) and
+    (GlyphItem.Value <= Ord(High(TCalendarGlyphStyle))) then
+    Result.DayGlyph := TCalendarGlyphStyle(GlyphItem.Value);
 
   ReadPages(Result, BaseItem.Value, TargetItem.Value);
   Result.StartTime := FiniteRange(DelayItem.Value, 0, 0, MaxTiming);

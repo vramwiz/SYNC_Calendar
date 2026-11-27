@@ -15,6 +15,8 @@ type
   TDone = procedure; cdecl;
   PVertex = ^TVertexColorNorm;
   PItemPointer = ^Pointer;
+  PSelectOption = ^TFILTER_ITEM_SELECT_ITEM;
+  PVisibilityRule = ^TFILTER_ITEM_HIDE_RULE;
 
 var
   Table: PFILTER_PLUGIN_TABLE;
@@ -27,8 +29,8 @@ var
   Captured: TArray<Single>;
   OutputDir: string;
   AnchorW, AnchorH, CameraRead, ForcedCamera, AudioCalls, VertexCount: Integer;
-  ImageSet, Culling, HasLift, RedNumber, RedWeekday: Boolean;
-  ItemKind, ItemEffect: PFILTER_ITEM_SELECT;
+  ImageSet, Culling, HasLift, RedNumber, RedWeekday, RedHeader, BlueHeader: Boolean;
+  ItemKind, ItemEffect, ItemGlyph: PFILTER_ITEM_SELECT;
   Base, Target, Holidays: PFILTER_ITEM_STRING;
   Delay, Duration, Volume: PFILTER_ITEM_TRACK;
   HolidayColor: PFILTER_ITEM_COLOR;
@@ -85,9 +87,12 @@ begin
     HasLift := HasLift or (V.Z < -25);
     if (V.R = 1) and (V.G = 0) and (V.B = 0) then
     begin
+      RedHeader := RedHeader or (V.Y < -170);
       RedNumber := RedNumber or (Abs(V.Y) < 130);
       RedWeekday := RedWeekday or (V.Y > 200);
     end;
+    if (V.R = 0) and (V.G = 0) and (V.B = 1) then
+      BlueHeader := BlueHeader or (V.Y < -170);
   end;
   Mesh.WriteBuffer(PVertex(Vertices)^, Count * SizeOf(TVertexColorNorm));
   Inc(VertexCount, Count);
@@ -131,6 +136,8 @@ begin
   HasLift := False;
   RedNumber := False;
   RedWeekday := False;
+  RedHeader := False;
+  BlueHeader := False;
   Check(Table^.Func_Proc_Video(@Video) = 0, 'Video suppressed standard output');
   Check(ImageSet and (AnchorW > 400) and (AnchorH > 400) and not Culling,
     'Video callback setup or state restore');
@@ -155,6 +162,7 @@ procedure ResetParams;
 begin
   ItemKind^.Value := Ord(ckMonth);
   ItemEffect^.Value := Ord(ceNone);
+  ItemGlyph^.Value := Ord(gsClassic);
   Base^.Value := DefaultBaseDate;
   Target^.Value := DefaultTargetDate;
   Holidays^.Value := DefaultHolidays;
@@ -217,6 +225,63 @@ begin
   Check(Render(0) = Invalid, 'Invalid date fallback');
 end;
 
+procedure VerifyGlyphStyles;
+const
+  Options: array[0..3] of string = ('明朝', '丸ゴシック', '角ゴシック', '手書き体');
+  Values: array[0..3] of TCalendarGlyphStyle = (gsMincho, gsRoundGothic, gsSquareGothic, gsClassic);
+var
+  S, Previous: TCalendarGlyphStyle;
+  I: Integer;
+  Glyphs, Turning: array[TCalendarGlyphStyle] of string;
+  Monthly: string;
+  Rule: PVisibilityRule;
+  Option: PSelectOption;
+begin
+  Check(ItemGlyph^.Value = Ord(gsClassic), 'The current glyphs are the default');
+  Option := PSelectOption(ItemGlyph^.List);
+  for I := Low(Options) to High(Options) do
+    Check((string(Option[I].Name) = Options[I]) and (Option[I].Value = Ord(Values[I])),
+      'Glyph selector order, names and existing IDs');
+  Check(Option[Length(Options)].Name = nil, 'Glyph selector terminator');
+  Rule := Item('日めくりの字形', 'hiderule');
+  Check((string(Rule^.ConditionName) = 'カレンダー種類') and
+    (Rule^.ConditionOperator = FILTER_HIDE_NOT_EQUAL) and (Rule^.ConditionValue = Ord(ckDay)),
+    'Glyph selector is shown only for daily calendars');
+
+  ResetParams;
+  Monthly := Render(0);
+  ItemGlyph^.Value := Ord(gsMincho);
+  Check(Render(0) = Monthly, 'Glyph setting does not change the monthly layout');
+  ItemKind^.Value := Ord(ckIllustrated);
+  Monthly := Render(0);
+  ItemGlyph^.Value := Ord(gsSquareGothic);
+  Check(Render(0) = Monthly, 'Glyph setting does not change the illustrated layout');
+
+  ItemKind^.Value := Ord(ckDay);
+  Base^.Value := '2026/12/31';
+  Target^.Value := '2027/1/1';
+  for S := Low(S) to High(S) do
+  begin
+    ItemGlyph^.Value := Ord(S);
+    ItemEffect^.Value := Ord(ceNone);
+    Glyphs[S] := Render(0, 'glyph-' + IntToStr(Ord(S)));
+    ItemEffect^.Value := Ord(ceTurn);
+    Turning[S] := Render(0.45);
+    Check(HasLift, 'Selected glyphs render during a page turn');
+    Render(1, 'glyph-holiday-' + IntToStr(Ord(S)));
+    Check(RedHeader and RedNumber and RedWeekday, 'Header, date and weekday share holiday color');
+    for Previous := Low(S) to High(S) do
+      if Previous < S then
+      begin
+        Check(Glyphs[S] <> Glyphs[Previous], 'Distinct glyph mesh before page turn');
+        Check(Turning[S] <> Turning[Previous], 'Distinct glyph mesh during page turn');
+      end;
+  end;
+  ItemEffect^.Value := Ord(ceNone);
+  ItemGlyph^.Value := 99;
+  Check(Render(0) = Glyphs[gsClassic], 'Unknown glyph style falls back to the current glyphs');
+end;
+
 procedure VerifyDates;
 const
   Months: array[1..12] of PWideChar = ('2027/1/1','2027/2/1','2027/3/1','2027/4/1',
@@ -231,7 +296,7 @@ begin
   Base^.Value := '2027/5/3';
   Holidays^.Value := '5/2,'#13#10'2/30, x';
   Expected := Render(0);
-  Check(RedNumber and RedWeekday, 'Sunday holiday substitutes on Monday');
+  Check(RedHeader and RedNumber and RedWeekday, 'Sunday holiday substitutes on Monday');
   Holidays^.Value := '05/03';
   Check(Render(0) = Expected, 'Direct and substitute holidays have same ink');
   HolidayColor^.R := 217;
@@ -242,14 +307,14 @@ begin
   Base^.Value := '2027/5/1';
   Holidays^.Value := '5/1';
   Render(0);
-  Check(RedNumber and RedWeekday, 'Saturday holiday overrides Saturday color');
+  Check(RedHeader and RedNumber and RedWeekday, 'Saturday holiday overrides Saturday color');
   Holidays^.Value := '';
   Render(0);
-  Check(not RedNumber and not RedWeekday, 'Removing a holiday restores weekday color');
+  Check(BlueHeader and not RedHeader and not RedNumber and not RedWeekday, 'Removing a holiday restores Saturday blue');
   Base^.Value := '2028/2/29';
   Holidays^.Value := '2/29';
   Render(0);
-  Check(RedNumber and RedWeekday, 'Leap day is accepted');
+  Check(RedHeader and RedNumber and RedWeekday, 'Leap day is accepted');
 
   S := Default(TCalendarSettings);
   S.Kind := ckDay;
@@ -357,6 +422,7 @@ begin
       (string(Table^.Label_) = 'SYNC') and (Table^.Flag = 23), 'AV object plugin registration');
     ItemKind := Item('カレンダー種類', 'select');
     ItemEffect := Item('演出', 'select');
+    ItemGlyph := Item('日めくりの字形', 'select');
     Base := Item('基準年月日', 'string');
     Target := Item('目標年月日', 'string');
     Holidays := Item('祝日', 'text');
@@ -392,6 +458,7 @@ begin
     View.SY := 1;
     View.SZ := 1;
     try
+      VerifyGlyphStyles;
       VerifyTimeline;
       VerifyDates;
       VerifyAudio;

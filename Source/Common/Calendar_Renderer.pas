@@ -175,7 +175,8 @@ var
 begin
   BodyChanged := not FReady or (FSettings.Kind <> S.Kind) or
     (FSettings.Colors[ccPaper] <> S.Colors[ccPaper]);
-  if BodyChanged or not CompareMem(@FSettings.Colors, @S.Colors, SizeOf(S.Colors)) or
+  if BodyChanged or ((S.Kind = ckDay) and (FSettings.DayGlyph <> S.DayGlyph)) or
+    not CompareMem(@FSettings.Colors, @S.Colors, SizeOf(S.Colors)) or
     not CompareMem(@FSettings.Holidays, @S.Holidays, SizeOf(S.Holidays)) then
   begin
     FPages[0].Page := -1;

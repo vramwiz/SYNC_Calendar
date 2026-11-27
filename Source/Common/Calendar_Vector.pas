@@ -19,6 +19,9 @@ type
     Lift: Single;
   end;
   TArt = class(TList<TArtTriangle>)
+  private
+    procedure StrokeOutline(const Points: array of TArtPoint; Width: Single;
+      Caps: Boolean; const WidthScales: array of Single);
   public
     Lift: Single; // 紙の手前側への距離
     procedure Triangle(const A, B, C: TArtPoint);
@@ -28,7 +31,11 @@ type
       TopAlpha: Single = 1; BottomAlpha: Single = 1);
     procedure RoundRect(X1, Y1, X2, Y2, Radius: Single; Color: Cardinal);
     procedure Oval(X, Y, RX, RY: Single; Color: Cardinal; Sides: Integer = 16);
-    procedure Stroke(const Points: array of TArtPoint; Width: Single; Caps: Boolean = True);
+    procedure Stroke(const Points: array of TArtPoint; Width: Single;
+      Caps: Boolean = True); overload;
+    // WidthScales は点ごとの線幅倍率。先端の装飾は呼び出し側で描く。
+    procedure Stroke(const Points: array of TArtPoint; Width: Single;
+      const WidthScales: array of Single); overload;
   end;
 
 function Ink(X, Y: Single; Color: Cardinal; Alpha: Single = 1): TArtPoint;
@@ -142,6 +149,18 @@ begin
 end;
 
 procedure TArt.Stroke(const Points: array of TArtPoint; Width: Single; Caps: Boolean);
+begin
+  StrokeOutline(Points, Width, Caps, []);
+end;
+
+procedure TArt.Stroke(const Points: array of TArtPoint; Width: Single;
+  const WidthScales: array of Single);
+begin
+  StrokeOutline(Points, Width, False, WidthScales);
+end;
+
+procedure TArt.StrokeOutline(const Points: array of TArtPoint; Width: Single;
+  Caps: Boolean; const WidthScales: array of Single);
 var
   I: Integer;
   PrevLeft, PrevRight, Left, Right: TArtPoint;
@@ -161,6 +180,7 @@ var
 begin
   if Length(Points) < 2 then Exit;
   Half := Width * 0.5;
+  if Length(WidthScales) <> 0 then Half := Width * 0.5 * WidthScales[0];
   EdgeNormal(0, NX, NY);
   PrevLeft := Ink(Points[0].X + NX * Half, Points[0].Y + NY * Half, Points[0].Color);
   PrevRight := Ink(Points[0].X - NX * Half, Points[0].Y - NY * Half, Points[0].Color);
@@ -169,6 +189,7 @@ begin
     NextX := NX;
     NextY := NY;
     if I < High(Points) then EdgeNormal(I, NextX, NextY);
+    if Length(WidthScales) <> 0 then Half := Width * 0.5 * WidthScales[I];
     D := Half / Max(0.65, 1 + NX * NextX + NY * NextY);
     DX := (NX + NextX) * D;
     DY := (NY + NextY) * D;
